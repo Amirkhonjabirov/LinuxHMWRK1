@@ -1,15 +1,20 @@
 from subprocess import run
-import datetime
+from _datetime import datetime
 
-subprocss = run("ps aux", shell=True, capture_output=True).stdout.decode('utf-8').rstrip()
-result = subprocss.split('\n')
-processes = len(result) - 1
-users_and_processes = {}
-using_max_cpu = [result[1].split()[10][:20], 0]
-using_max_mem = [result[1].split()[10][:20], 0]
+
+def print_and_write(cons, file_name):
+    print(cons)
+    file_name.write(cons + '\n')
 
 
 def generate_log_file():
+    subprocss = run("ps aux", shell=True, capture_output=True).stdout.decode('utf-8').rstrip()
+    result = subprocss.split('\n')
+    processes = len(result) - 1
+    users_and_processes = {}
+    using_max_cpu = [result[1].split()[10][:20], 0]
+    using_max_mem = [result[1].split()[10][:20], 0]
+
     cpu = 0
     memory = 0
 
@@ -32,16 +37,16 @@ def generate_log_file():
             using_max_mem[0], using_max_mem[1] = row[10][:20], float(row[3])
 
     with open(filename, 'a') as f:
-        f.write("Отчёт о состоянии системы:")
-        f.write(f"Пользователи системы: {', '.join(i for i in users_and_processes.keys())}")
-        f.write(f"Процессов запущено: {processes}")
-        f.write("Пользовательских процессов:")
+        print_and_write("Отчёт о состоянии системы: ", f)
+        print_and_write(f"Пользователи системы: {', '.join(i for i in users_and_processes.keys())}", f)
+        print_and_write(f"Процессов запущено: {processes}", f)
+        print_and_write("Пользовательских процессов:", f)
         for key, value in users_and_processes.items():
-            f.write(f"{key}: {value}")
-        f.write(f"Всего памяти используется: {memory}%")
-        f.write(f"Всего CPU используется: {cpu}%")
-        f.write(f"Больше всего памяти использует: {using_max_mem[0]}")
-        f.write(f"Больше всего CPU использует: {using_max_cpu[0]}")
+            print_and_write(f"{key}: {value}", f)
+        print_and_write(f"Всего памяти используется: {round(memory, 2)}%", f)
+        print_and_write(f"Всего CPU используется: {round(cpu, 2)}%", f)
+        print_and_write(f"Больше всего памяти использует: {using_max_mem[0]}", f)
+        print_and_write(f"Больше всего CPU использует: {using_max_cpu[0]}", f)
 
 
 if __name__ == '__main__':
